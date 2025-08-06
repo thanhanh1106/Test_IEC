@@ -29,7 +29,7 @@ public class UIPanelPause : MonoBehaviour, IMenu
     {
         m_mngr.ShowGameMenu();
     }
-
+    
     public void Show()
     {
         this.gameObject.SetActive(true);

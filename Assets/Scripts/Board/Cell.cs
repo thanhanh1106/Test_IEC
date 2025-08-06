@@ -83,7 +83,7 @@ public class Cell : MonoBehaviour
 
     internal void StopHintAnimation()
     {
-        Item.StopAnimateForHint();
+        Item?.StopAnimateForHint();
     }
 
     internal void ApplyItemMoveToPosition()
