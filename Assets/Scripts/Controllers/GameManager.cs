@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    
+    [SerializeField] private Theme _theme;
+
     public event Action<eStateGame> StateChangedAction = delegate { };
 
     public enum eLevelMode
@@ -37,8 +40,7 @@ public class GameManager : MonoBehaviour
 
 
     private GameSettings m_gameSettings;
-
-
+    
     private BoardController m_boardController;
 
     private UIMainManager m_uiMenu;
@@ -84,7 +86,7 @@ public class GameManager : MonoBehaviour
     public void LoadLevel(eLevelMode mode)
     {
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
-        m_boardController.StartGame(this, m_gameSettings);
+        m_boardController.StartGame(this, m_gameSettings,_theme);
 
         if (mode == eLevelMode.MOVES)
         {

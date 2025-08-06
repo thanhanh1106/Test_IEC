@@ -9,8 +9,8 @@ public class Item
 {
     public Cell Cell { get; private set; }
 
-    public Transform View { get; private set; }
-    private GameObject m_prefab;
+    public Transform View { get; protected set; }
+    protected GameObject m_prefab;
 
     public virtual void SetView()
     {

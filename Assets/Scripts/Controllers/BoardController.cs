@@ -22,6 +22,7 @@ public class BoardController : MonoBehaviour
     private Collider2D m_hitCollider;
 
     private GameSettings m_gameSettings;
+    private Theme _theme;
 
     private List<Cell> m_potentialMatch;
 
@@ -36,20 +37,23 @@ public class BoardController : MonoBehaviour
     private const float INPUT_COOLDOWN = 0.05f;
     private float m_lastInputTime;
 
-    public void StartGame(GameManager gameManager, GameSettings gameSettings)
+    public void StartGame(GameManager gameManager, GameSettings gameSettings,Theme theme)
     {
         m_gameManager = gameManager;
 
         m_gameSettings = gameSettings;
+        _theme = theme;
 
         m_gameManager.StateChangedAction += OnGameStateChange;
 
         m_cam = Camera.main;
 
-        m_board = new Board(this.transform, gameSettings);
+        m_board = new Board(this.transform, gameSettings,_theme);
 
         Fill();
     }
+    
+    
 
     private void Fill()
     {

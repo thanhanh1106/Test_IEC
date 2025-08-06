@@ -26,12 +26,14 @@ public class Board
     private int m_matchMin;
     
     private static GameObject s_cachedCellPrefab;
+    private Theme _theme;
 
-    public Board(Transform transform, GameSettings gameSettings)
+    public Board(Transform transform, GameSettings gameSettings, Theme theme)
     {
         m_root = transform;
 
         m_matchMin = gameSettings.MatchesMin;
+        _theme = theme;
 
         this.boardSizeX = gameSettings.BoardSizeX;
         this.boardSizeY = gameSettings.BoardSizeY;
@@ -108,6 +110,7 @@ public class Board
                 }
 
                 item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                item.SetTheme(_theme.GetThemeItem(item.ItemType));
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -155,6 +158,7 @@ public class Board
                 NormalItem item = new NormalItem();
 
                 item.SetType(Utils.GetRandomNormalType());
+                item.SetTheme(_theme.GetThemeItem(item.ItemType));
                 item.SetView();
                 item.SetViewRoot(m_root);
 
