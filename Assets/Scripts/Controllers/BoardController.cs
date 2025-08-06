@@ -30,6 +30,11 @@ public class BoardController : MonoBehaviour
     private bool m_hintIsShown;
 
     private bool m_gameOver;
+    
+    private Vector3 m_lastMousePosition;
+    private const float MIN_MOUSE_MOVEMENT = 0.1f;
+    private const float INPUT_COOLDOWN = 0.05f;
+    private float m_lastInputTime;
 
     public void StartGame(GameManager gameManager, GameSettings gameSettings)
     {
@@ -74,7 +79,6 @@ public class BoardController : MonoBehaviour
     {
         if (m_gameOver) return;
         if (IsBusy) return;
-
         if (!m_hintIsShown)
         {
             m_timeAfterFill += Time.deltaTime;
@@ -85,24 +89,42 @@ public class BoardController : MonoBehaviour
             }
         }
 
+        HandleOptimizedInput();
+    }
+    
+    private void HandleOptimizedInput()
+    {
+        if (Time.time - m_lastInputTime < INPUT_COOLDOWN)
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            m_lastMousePosition = Input.mousePosition;
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(m_lastMousePosition), Vector2.zero);
             if (hit.collider != null)
             {
                 m_isDragging = true;
                 m_hitCollider = hit.collider;
+                m_lastInputTime = Time.time;
             }
         }
 
         if (Input.GetMouseButtonUp(0))
         {
             ResetRayCast();
+            m_lastInputTime = Time.time;
         }
 
         if (Input.GetMouseButton(0) && m_isDragging)
         {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            Vector3 currentMousePos = Input.mousePosition;
+            
+            if (Vector3.Distance(currentMousePos, m_lastMousePosition) < MIN_MOUSE_MOVEMENT)
+                return;
+                
+            m_lastMousePosition = currentMousePos;
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(currentMousePos), Vector2.zero);
+            
             if (hit.collider != null)
             {
                 if (m_hitCollider != null && m_hitCollider != hit.collider)
@@ -111,6 +133,7 @@ public class BoardController : MonoBehaviour
 
                     Cell c1 = m_hitCollider.GetComponent<Cell>();
                     Cell c2 = hit.collider.GetComponent<Cell>();
+                    
                     if (AreItemsNeighbor(c1, c2))
                     {
                         IsBusy = true;
@@ -128,6 +151,8 @@ public class BoardController : MonoBehaviour
             {
                 ResetRayCast();
             }
+            
+            m_lastInputTime = Time.time;
         }
     }
 
