@@ -24,6 +24,8 @@ public class Board
     private Transform m_root;
 
     private int m_matchMin;
+    
+    private static GameObject s_cachedCellPrefab;
 
     public Board(Transform transform, GameSettings gameSettings)
     {
@@ -42,7 +44,12 @@ public class Board
     private void CreateBoard()
     {
         Vector3 origin = new Vector3(-boardSizeX * 0.5f + 0.5f, -boardSizeY * 0.5f + 0.5f, 0f);
-        GameObject prefabBG = Resources.Load<GameObject>(Constants.PREFAB_CELL_BACKGROUND);
+        //GameObject prefabBG = Resources.Load<GameObject>(Constants.PREFAB_CELL_BACKGROUND);
+        if (s_cachedCellPrefab == null)
+        {
+            s_cachedCellPrefab = Resources.Load<GameObject>(Constants.PREFAB_CELL_BACKGROUND);
+        }
+        GameObject prefabBG = s_cachedCellPrefab;
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
@@ -295,15 +302,29 @@ public class Board
     internal eMatchDirection GetMatchDirection(List<Cell> matches)
     {
         if (matches == null || matches.Count < m_matchMin) return eMatchDirection.NONE;
-
-        var listH = matches.Where(x => x.BoardX == matches[0].BoardX).ToList();
-        if (listH.Count == matches.Count)
+        
+        int referenceX = matches[0].BoardX;
+        int sameXCount = 0;
+        for (int i = 0; i < matches.Count; i++)
+        {
+            if (matches[i].BoardX == referenceX)
+                sameXCount++;
+        }
+        
+        if (sameXCount == matches.Count)
         {
             return eMatchDirection.VERTICAL;
         }
-
-        var listV = matches.Where(x => x.BoardY == matches[0].BoardY).ToList();
-        if (listV.Count == matches.Count)
+        
+        int referenceY = matches[0].BoardY;
+        int sameYCount = 0;
+        for (int i = 0; i < matches.Count; i++)
+        {
+            if (matches[i].BoardY == referenceY)
+                sameYCount++;
+        }
+        
+        if (sameYCount == matches.Count)
         {
             return eMatchDirection.HORIZONTAL;
         }
@@ -348,9 +369,18 @@ public class Board
     public List<Cell> CheckBonusIfCompatible(List<Cell> matches)
     {
         var dir = GetMatchDirection(matches);
-
-        var bonus = matches.Where(x => x.Item is BonusItem).FirstOrDefault();
-        if(bonus == null)
+        
+        Cell bonusCell = null;
+        for (int i = 0; i < matches.Count; i++)
+        {
+            if (matches[i].Item is BonusItem)
+            {
+                bonusCell = matches[i];
+                break;
+            }
+        }
+        
+        if (bonusCell == null)
         {
             return matches;
         }
@@ -359,32 +389,32 @@ public class Board
         switch (dir)
         {
             case eMatchDirection.HORIZONTAL:
-                foreach (var cell in matches)
+                for (int i = 0; i < matches.Count; i++)
                 {
-                    BonusItem item = cell.Item as BonusItem;
+                    BonusItem item = matches[i].Item as BonusItem;
                     if (item == null || item.ItemType == BonusItem.eBonusType.HORIZONTAL)
                     {
-                        result.Add(cell);
+                        result.Add(matches[i]);
                     }
                 }
                 break;
             case eMatchDirection.VERTICAL:
-                foreach (var cell in matches)
+                for (int i = 0; i < matches.Count; i++)
                 {
-                    BonusItem item = cell.Item as BonusItem;
+                    BonusItem item = matches[i].Item as BonusItem;
                     if (item == null || item.ItemType == BonusItem.eBonusType.VERTICAL)
                     {
-                        result.Add(cell);
+                        result.Add(matches[i]);
                     }
                 }
                 break;
             case eMatchDirection.ALL:
-                foreach (var cell in matches)
+                for (int i = 0; i < matches.Count; i++)
                 {
-                    BonusItem item = cell.Item as BonusItem;
+                    BonusItem item = matches[i].Item as BonusItem;
                     if (item == null || item.ItemType == BonusItem.eBonusType.ALL)
                     {
-                        result.Add(cell);
+                        result.Add(matches[i]);
                     }
                 }
                 break;
