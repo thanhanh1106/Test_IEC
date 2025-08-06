@@ -148,6 +148,38 @@ public class Board
 
     internal void FillGapsWithNewItems()
     {
+        // for (int x = 0; x < boardSizeX; x++)
+        // {
+        //     for (int y = 0; y < boardSizeY; y++)
+        //     {
+        //         Cell cell = m_cells[x, y];
+        //         if (!cell.IsEmpty) continue;
+        //
+        //         NormalItem item = new NormalItem();
+        //
+        //         item.SetType(Utils.GetRandomNormalType());
+        //         item.SetTheme(_theme.GetThemeItem(item.ItemType));
+        //         item.SetView();
+        //         item.SetViewRoot(m_root);
+        //
+        //         cell.Assign(item);
+        //         cell.ApplyItemPosition(true);
+        //     }
+        // }
+        
+        // đếm các loại item trên bàn
+        Dictionary<NormalItem.eNormalType, int> typeCounts = new Dictionary<NormalItem.eNormalType, int>();
+        foreach (var cell in m_cells)
+        {
+            if (cell.Item is NormalItem normalItem)
+            {
+                if (!typeCounts.ContainsKey(normalItem.ItemType))
+                    typeCounts[normalItem.ItemType] = 0;
+                typeCounts[normalItem.ItemType]++;
+            }
+        }
+        
+        // duyệt ma trận 
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
@@ -155,9 +187,30 @@ public class Board
                 Cell cell = m_cells[x, y];
                 if (!cell.IsEmpty) continue;
 
-                NormalItem item = new NormalItem();
+                // lấy 4 item xung quanh nó
+                HashSet<NormalItem.eNormalType> neighborTypes = new HashSet<NormalItem.eNormalType>();
+                CheckAndAddType(x - 1, y,ref neighborTypes); // trái
+                CheckAndAddType(x + 1, y,ref neighborTypes); // phải
+                CheckAndAddType(x, y - 1,ref neighborTypes); // dưới 
+                CheckAndAddType(x, y + 1,ref neighborTypes); // trên
 
-                item.SetType(Utils.GetRandomNormalType());
+                //Lấy tất cả item type hợp lệ khác xung quanh
+                var allTypes = Enum.GetValues(typeof(NormalItem.eNormalType)).Cast<NormalItem.eNormalType>();
+                var validTypes = allTypes.Where(t => !neighborTypes.Contains(t)).ToList();
+
+                // Chọn item type ít nhất 
+                NormalItem.eNormalType selectedType = validTypes
+                    .OrderBy(t => typeCounts.ContainsKey(t) ? typeCounts[t] : 0)
+                    .FirstOrDefault();
+
+                // Tăng đếm cho vòng sau
+                if (!typeCounts.ContainsKey(selectedType))
+                    typeCounts[selectedType] = 0;
+                typeCounts[selectedType]++;
+
+                // tạo item
+                NormalItem item = new NormalItem();
+                item.SetType(selectedType);
                 item.SetTheme(_theme.GetThemeItem(item.ItemType));
                 item.SetView();
                 item.SetViewRoot(m_root);
@@ -166,6 +219,18 @@ public class Board
                 cell.ApplyItemPosition(true);
             }
         }
+        void CheckAndAddType(int x, int y,ref HashSet<NormalItem.eNormalType> set)
+        {
+            if (x >= 0 && x < boardSizeX && y >= 0 && y < boardSizeY)
+            {
+                Cell neighbor = m_cells[x, y];
+                if (!neighbor.IsEmpty && neighbor.Item is NormalItem ni)
+                {
+                    set.Add(ni.ItemType);
+                }
+            }
+        }
+        
     }
 
     internal void ExplodeAllItems()
