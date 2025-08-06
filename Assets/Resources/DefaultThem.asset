@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: DefaultThem
   m_EditorClassIdentifier: 
   items:
-  - ItemType: 0
+  - ItemType: 1
     Tex2D: {fileID: 2800000, guid: e5fea27bcfb023d4fa4f7b314a1e468f, type: 3}
     PPU: 256
-  - ItemType: 1
+  - ItemType: 2
     Tex2D: {fileID: 2800000, guid: fa170d4df6f61ca4d87906fecd033754, type: 3}
     PPU: 256
-  - ItemType: 2
+  - ItemType: 3
     Tex2D: {fileID: 2800000, guid: ad0255438bdaee746942172f60838326, type: 3}
     PPU: 256
-  - ItemType: 3
+  - ItemType: 4
     Tex2D: {fileID: 2800000, guid: 5ead70314c8057e4fbad1171b57e2285, type: 3}
     PPU: 256
-  - ItemType: 4
+  - ItemType: 5
     Tex2D: {fileID: 2800000, guid: 4aade970bd310bf41999ff1d6929698d, type: 3}
     PPU: 256
-  - ItemType: 5
+  - ItemType: 6
     Tex2D: {fileID: 2800000, guid: 9155563869121a64691c05bc3ca52e14, type: 3}
     PPU: 256
-  - ItemType: 6
+  - ItemType: 7
     Tex2D: {fileID: 2800000, guid: 7164e9eb7829dfb4595431d2eb01fc76, type: 3}
     PPU: 256

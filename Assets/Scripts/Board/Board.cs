@@ -27,6 +27,8 @@ public class Board
     
     private static GameObject s_cachedCellPrefab;
     private Theme _theme;
+    private Dictionary<NormalItem.eNormalType, GameObject> m_normalPrefabs;
+    private Dictionary<BonusItem.eBonusType, GameObject> m_bonusPrefabs;
 
     public Board(Transform transform, GameSettings gameSettings, Theme theme)
     {
@@ -34,13 +36,45 @@ public class Board
 
         m_matchMin = gameSettings.MatchesMin;
         _theme = theme;
-
+        LoadNormalPrefabs();
+        LoadBonusPrefabs();
         this.boardSizeX = gameSettings.BoardSizeX;
         this.boardSizeY = gameSettings.BoardSizeY;
 
         m_cells = new Cell[boardSizeX, boardSizeY];
 
         CreateBoard();
+    }
+
+
+    private void LoadNormalPrefabs()
+    {
+        m_normalPrefabs = new Dictionary<NormalItem.eNormalType, GameObject>();
+
+        foreach (NormalItem.eNormalType type in Enum.GetValues(typeof(NormalItem.eNormalType)))
+        {
+            var pf = Resources.Load<GameObject>($"prefabs/itemNormal{((int)type).ToString("D2")}");
+
+            var themeItem = _theme.GetThemeItem(type);
+
+            var pfThemed = GameObject.Instantiate(pf, Vector2.one * 1000000, Quaternion.identity); // dịch ra chỗ khác đỡ nhìn thấy
+            
+            Sprite newSprite = Sprite.Create(themeItem.Tex2D,
+                new Rect(0, 0, themeItem.Tex2D.width, themeItem.Tex2D.height),
+                new Vector2(0.5f, 0.5f),themeItem.PPU); 
+            pfThemed.GetComponent<SpriteRenderer>().sprite = newSprite;
+            m_normalPrefabs.Add(type, pfThemed);
+        }
+    }
+
+    private void LoadBonusPrefabs()
+    {
+        m_bonusPrefabs = new Dictionary<BonusItem.eBonusType, GameObject>();
+        foreach (BonusItem.eBonusType type in Enum.GetValues(typeof(BonusItem.eBonusType)))
+        {
+            var pf = Resources.Load<GameObject>($"prefabs/itemBonus{type}");
+            m_bonusPrefabs.Add(type, pf);
+        }
     }
 
     private void CreateBoard()
@@ -110,7 +144,7 @@ public class Board
                 }
 
                 item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
-                item.SetTheme(_theme.GetThemeItem(item.ItemType));
+                item.SetPrefab(m_normalPrefabs[item.ItemType]);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -211,7 +245,7 @@ public class Board
                 // tạo item
                 NormalItem item = new NormalItem();
                 item.SetType(selectedType);
-                item.SetTheme(_theme.GetThemeItem(item.ItemType));
+                item.SetPrefab(m_normalPrefabs[item.ItemType]);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -358,6 +392,7 @@ public class Board
                 cellToConvert = matches[rnd];
             }
 
+            item.SetPrefab(m_bonusPrefabs[item.ItemType]);
             item.SetView();
             item.SetViewRoot(m_root);
 

@@ -11,33 +11,28 @@ public class Item
 
     public Transform View { get; protected set; }
     protected GameObject m_prefab;
+    
+    public void SetPrefab(GameObject prefab) =>  m_prefab = prefab;
 
-    public virtual void SetView()
+    public void SetView()
     {
-        string prefabname = GetPrefabName();
-
-        if (!string.IsNullOrEmpty(prefabname))
+        if (!m_prefab)
         {
-            // Load prefab from Resources
-            m_prefab = Resources.Load<GameObject>(prefabname);
-            if (m_prefab)
-            {
-                // Try to get from object pool first
-                GameObject pooledObject = ObjectPool.Instance.SpawnFromPool(m_prefab, Vector3.zero, Quaternion.identity);
-                if (pooledObject != null)
-                {
-                    View = pooledObject.transform;
-                    return;
-                }
-                
-                // Fallback to direct instantiation if pool fails
-                View = GameObject.Instantiate(m_prefab).transform;
-            }
+            Debug.LogError("The prefab object is null!");
+            return;
         }
+        
+        GameObject pooledObject = ObjectPool.Instance.SpawnFromPool(m_prefab, Vector3.zero, Quaternion.identity);
+        if (pooledObject != null)
+        {
+            View = pooledObject.transform;
+            return;
+        }
+                
+        // Fallback to direct instantiation if pool fails
+        View = GameObject.Instantiate(m_prefab).transform;
     }
-
-    protected virtual string GetPrefabName() { return string.Empty; }
-
+    
     public virtual void SetCell(Cell cell)
     {
         Cell = cell;
