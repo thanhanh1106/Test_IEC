@@ -10,7 +10,7 @@ public class Item
     public Cell Cell { get; private set; }
 
     public Transform View { get; private set; }
-
+    private GameObject m_prefab;
 
     public virtual void SetView()
     {
@@ -18,10 +18,20 @@ public class Item
 
         if (!string.IsNullOrEmpty(prefabname))
         {
-            GameObject prefab = Resources.Load<GameObject>(prefabname);
-            if (prefab)
+            // Load prefab from Resources
+            m_prefab = Resources.Load<GameObject>(prefabname);
+            if (m_prefab)
             {
-                View = GameObject.Instantiate(prefab).transform;
+                // Try to get from object pool first
+                GameObject pooledObject = ObjectPool.Instance.SpawnFromPool(m_prefab, Vector3.zero, Quaternion.identity);
+                if (pooledObject != null)
+                {
+                    View = pooledObject.transform;
+                    return;
+                }
+                
+                // Fallback to direct instantiation if pool fails
+                View = GameObject.Instantiate(m_prefab).transform;
             }
         }
     }
@@ -101,10 +111,19 @@ public class Item
             View.DOScale(0.1f, 0.1f).OnComplete(
                 () =>
                 {
-                    GameObject.Destroy(View.gameObject);
-                    View = null;
+                    ReturnToPool();
                 }
                 );
+        }
+    }
+
+    private void ReturnToPool()
+    {
+        if (View)
+        {
+            // Try to return to pool, if fails then destroy
+            ObjectPool.Instance.ReturnToPool(View.gameObject);
+            View = null;
         }
     }
 
@@ -129,11 +148,6 @@ public class Item
     internal void Clear()
     {
         Cell = null;
-
-        if (View)
-        {
-            GameObject.Destroy(View.gameObject);
-            View = null;
-        }
+        ReturnToPool();
     }
 }
